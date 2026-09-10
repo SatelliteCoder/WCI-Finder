@@ -1,0 +1,26 @@
+{
+  "default_model": "active_sonar_target_classifier_uatd_yolov8",
+  "models": [
+    {
+      "model_name": "active_sonar_target_classifier_uatd_yolov8",
+      "display_name": "主动声呐目标分类模型 UATD YOLOv8",
+      "framework": "Ultralytics YOLOv8",
+      "weights": "models/active_sonar_target_classifier_uatd_yolov8/weights/active_sonar_target_classifier_best.pt",
+      "input": "由水柱 WCI 候选区域导出的目标裁剪图",
+      "output": "目标类别、置信度、检测框",
+      "classes": [
+        "ball",
+        "circle cage",
+        "cube",
+        "cylinder",
+        "human body",
+        "metal bucket",
+        "plane",
+        "rov",
+        "square cage",
+        "tyre"
+      ],
+      "note": "这是当前交付包默认分类模型。若甲方需要潜艇、UUV、鱼雷等专用类别，需要替换为对应训练权重。"
+    }
+  ]
+}
