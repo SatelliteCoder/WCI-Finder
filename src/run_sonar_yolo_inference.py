@@ -13,11 +13,10 @@ from ultralytics import YOLO
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WEIGHTS = (
     ROOT
-    / "model"
-    / "active_sonar_classifiers"
-    / "uatd_yolov8n"
+    / "models"
+    / "active_sonar_target_classifier_uatd_yolov8"
     / "weights"
-    / "best.pt"
+    / "active_sonar_target_classifier_best.pt"
 )
 
 

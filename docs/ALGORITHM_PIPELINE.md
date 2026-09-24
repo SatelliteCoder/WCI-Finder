@@ -1,96 +1,82 @@
-# Active Sonar Target Classification Pipeline
+# Active Sonar Candidate Detection Pipeline
 
-This project now uses a Python runtime pipeline. The echogram is used only for fast candidate screening. The downstream classifier uses candidate-local single-ping WCI crops whenever they are available.
+This package uses a Python runtime pipeline for Kongsberg `.all/.wcd` multibeam water-column data.
 
-## Model
+The default workflow runs YOLO-WAL after WCI candidate extraction. YOLO-WAL is a WCI-domain detector for `fluide` and `FP` classes, so it is used for fluid/gas-plume detection and false-positive filtering. UATD YOLO is retained only as a backup experiment because it was trained on forward-looking sonar data, not EM2040CD WCI data.
 
-Default pretrained model:
-
-```text
-model/active_sonar_classifiers/uatd_yolov8n/weights/best.pt
-```
-
-Source code and weights:
-
-```text
-https://github.com/lMelkorl/Sonar-Threat-Detection-YOLO
-```
-
-The model is a YOLOv8 UATD sonar target detector. Its pretrained classes are:
-
-```text
-ball, circle cage, cube, cylinder, human body, metal bucket, plane, rov, square cage, tyre
-```
-
-It is not a dedicated submarine model. Submarine or vessel-specific classification still requires a matching labelled dataset and fine-tuning.
-
-## Pipeline
+## Default Pipeline
 
 1. `src/active_sonar_pipeline.py`
 
-   Python reads raw Kongsberg `.all/.wcd` water-column data, builds the echogram, estimates the bottom, detects anomalous water-column candidates, projects candidate centers to coordinates, and exports both render data and ML input crops. It does not start MATLAB and does not require `.mat` files.
+   Reads raw Kongsberg `.all/.wcd` water-column data, builds the echogram, estimates the bottom, detects anomalous water-column candidates, projects candidate centers to coordinates, and exports render data plus candidate crops.
 
-2. `src/run_sonar_yolo_inference.py`
+2. `src/run_yolo_wal_inference.py`
 
-   Python + Ultralytics YOLO runs the UATD sonar target model. It uses `ml_input_png` from `candidate_crop_manifest.json`; this points to a candidate-local WCI crop when available.
+   Runs the vendored YOLOv5 runtime with the YOLO-WAL WCI checkpoint on exported candidate WCI crops. It writes `yolo_wal_detections.json/csv` plus per-candidate overlay images.
 
 3. `src/merge_target_classification.py`
 
-   Python merges rule candidates, Python-derived coordinates, WCI crop paths, and YOLO model results into `final_targets.json` and `final_targets.csv`.
+   Merges YOLO-WAL outputs, fallback rule-based candidate types, source indices, and Python-derived coordinates into `final_targets.json` and `final_targets.csv`.
 
 Data requirement: the source line must provide a matching `.all/.wcd` pair. `Coffee_files`, `.mat`, `.dat`, and `.evi` files are not needed.
 
 ## Run
 
 ```powershell
-cd E:\Underwater-project\Act_Sonar
-powershell -ExecutionPolicy Bypass -File .\scripts\run_full_classification_pipeline.ps1 `
-  -SurveyId "20181112_survey" `
-  -AllName "0000_20181112_080147_TecnopescaII.all" `
-  -ThresholdKMad 3.8 `
-  -BottomGuardSamples 4 `
-  -MaxRegions 80 `
-  -ModelConf 0.25
+cd 主动声呐目标识别模型算法包
+python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all --product-id demo_product --threshold-k-mad 3.8 --bottom-guard-samples 4 --max-regions 80
 ```
 
-For another survey line, change `-SurveyId` and `-AllName`.
+For external data:
+
+```powershell
+python test.py --data-root D:\sonar_data --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all
+```
+
+Rule-only fallback:
+
+```powershell
+python test.py --classifier rule --product-id demo_rule_only
+```
+
+Backup UATD YOLO experiment:
+
+```powershell
+python test.py --classifier uatd_yolo --product-id demo_uatd_yolo_backup --model-conf 0.25 --image-size 640
+```
 
 ## Key Outputs
 
 Each run writes to:
 
 ```text
-E:\Underwater-project\Act_Sonar\outputs\<product_id>
+outputs/<product_id>
 ```
 
-- `echogram_render_data.json`: ECharts render data for the echogram.
+- `echogram_render_data.json`: render data for the echogram.
 - `candidate_overlay.json`: target boxes in echogram coordinates.
-- `single_ping_render_data.json`: ECharts render data for the WCI fan view.
-- `candidate_wci_render_data/<region_id>.json`: target-specific WCI fan render data. The YuanTing UI should load this file when the selected target changes.
-- `candidate_regions.json/csv`: candidate region source indices.
-- `candidate_positions.json/csv`: latitude, longitude, depth, slant range, cross-track distance, and relative bearing computed in Python from raw navigation, attitude, and WCI beam geometry.
-- `candidate_crop_manifest.json/csv`: crop paths and source indices. `ml_input_png` is the default model input.
-- `candidate_crops/*_wci_crop.png`: candidate-local WCI crops used by the sonar YOLO classifier.
-- `sonar_yolo_detections.json/csv`: raw model detections and model class names.
-- `final_targets.json/csv`: final target classification and positioning results consumed by the YuanTing UI.
+- `single_ping_render_data.json`: render data for the WCI fan view.
+- `candidate_wci_render_data/<region_id>.json`: target-specific WCI fan render data.
+- `candidate_regions.json/csv`: candidate region source indices and rule labels.
+- `candidate_positions.json/csv`: latitude, longitude, depth, slant range, cross-track distance, and relative bearing.
+- `candidate_crop_manifest.json/csv`: crop paths and source indices.
+- `yolo_wal_detections.json/csv`: YOLO-WAL WCI fluid/FP detections on candidate crops.
+- `final_targets.json/csv`: final model/rule candidate type and positioning results consumed by the UI.
 
 ## Label Meaning
 
-- `artificial_object_candidate`: model-detected artificial object candidate, currently mapped from UATD `plane`.
-- `cage_candidate`: model-detected cage target, mapped from `circle cage` or `square cage`.
-- `debris_or_artificial_object_candidate`: model-detected debris/artificial object, mapped from `metal bucket` or `tyre`.
-- `geometric_target_candidate`: model-detected geometric target, mapped from `ball`, `cube`, or `cylinder`.
-- `human_like_target_candidate`: model-detected human-body-like target.
-- `rov_candidate`: model-detected ROV target.
-- `fish_rule_candidate_unverified`: rule-based fish-school-like candidate, not confirmed by the UATD model.
-- `gas_plume_candidate`: rule-based natural-gas plume candidate.
-- `platform_candidate`: rule-based strong compact side return.
-- `unknown_target_candidate`: retained anomalous echo candidate that does not match a stronger rule or model class.
+- `fish_school_candidate`: rule-based fish-school-like candidate.
+- `gas_plume_candidate`: rule-based gas-plume-like candidate.
+- `platform_candidate`: rule-based strong compact side return / structure candidate.
+- `unknown_target_candidate`: retained anomalous echo candidate that does not match a stronger rule.
+- `gas_plume_candidate`: can also come from YOLO-WAL `fluide` detections.
+- `wci_false_positive_candidate`: YOLO-WAL `FP` detections.
 
-## Positioning Chain
+YOLO-WAL classes are limited to WCI fluid/gas-plume and FP detection. The package still does not provide a validated trained classifier for fish/submarine/UUV/general artificial-object classes. Formal project-specific accuracy requires labelled WCI ground truth.
 
-The classification crop is only the ML input. Defensible positioning remains tied to the raw water-column indices:
+## Next Model Route
 
-```text
-product_id -> region_id -> ping -> beam -> sample/range -> Python WCI projection -> latitude/longitude/depth
-```
+For a validated trained model, use one of these routes:
+
+1. Keep YOLO-WAL as the WCI fluid/FP detector for plume workflows.
+2. If the requirement expands to fish/submarine/UUV/artificial-object classification, collect or obtain WCI-labelled training data and train a dedicated WCI classifier. Do not reuse forward-looking-sonar UATD accuracy as WCI accuracy.

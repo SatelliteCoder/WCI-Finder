@@ -1,9 +1,37 @@
 {
-  "default_model": "active_sonar_target_classifier_uatd_yolov8",
+  "default_model": "yolo_wal_wci_fluid_detector",
   "models": [
     {
+      "model_name": "yolo_wal_wci_fluid_detector",
+      "display_name": "YOLO-WAL 多波束 WCI 流体/伪影检测模型",
+      "framework": "YOLOv5 / PyTorch",
+      "weights": "models/yolo_wal_wci_fluid_detector/weights/best_combined_gazcogne1.pt",
+      "input": "由水柱 WCI 候选区域导出的目标裁剪图",
+      "output": "WCI 流体/气体羽流候选、WCI 伪影候选、置信度、检测框",
+      "classes": [
+        "fluide",
+        "FP"
+      ],
+      "note": "这是当前交付包默认深度学习模型，来自 YOLO-WAL WCI 流体检测公开权重。它适用于 WCI 流体/气体羽流检测和伪影过滤，不是鱼、潜艇、人工目标多类别分类器。"
+    },
+    {
+      "model_name": "rule_based_wci_candidate_detector_v1",
+      "display_name": "多波束水柱 WCI 规则候选检测与定位",
+      "framework": "Python / signal-processing rules",
+      "weights": "",
+      "input": "Kongsberg .all/.wcd 原始多波束水柱数据",
+      "output": "异常回波候选、候选类型、经纬度、深度、斜距、左右舷",
+      "classes": [
+        "fish_school_candidate",
+        "gas_plume_candidate",
+        "platform_candidate",
+        "unknown_target_candidate"
+      ],
+      "note": "这是无深度学习模型时的备用规则流程。输出为规则候选类型，不是已通过人工真值验证的训练模型分类。"
+    },
+    {
       "model_name": "active_sonar_target_classifier_uatd_yolov8",
-      "display_name": "主动声呐目标分类模型 UATD YOLOv8",
+      "display_name": "UATD YOLOv8 对比实验模型",
       "framework": "Ultralytics YOLOv8",
       "weights": "models/active_sonar_target_classifier_uatd_yolov8/weights/active_sonar_target_classifier_best.pt",
       "input": "由水柱 WCI 候选区域导出的目标裁剪图",
@@ -20,7 +48,7 @@
         "square cage",
         "tyre"
       ],
-      "note": "这是当前交付包默认分类模型。若甲方需要潜艇、UUV、鱼雷等专用类别，需要替换为对应训练权重。"
+      "note": "该模型来自前视声呐 UATD 数据集，与当前 EM2040CD 多波束水柱 WCI 数据不匹配；仅保留为手动对比实验，不作为默认正式分类模型。"
     }
   ]
 }

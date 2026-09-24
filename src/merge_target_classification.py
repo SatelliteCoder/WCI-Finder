@@ -34,6 +34,8 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "classification_source",
         "model_class_name",
         "model_display_label",
+        "yolo_wal_status",
+        "yolo_wal_best_confidence",
         "sonar_yolo_status",
         "sonar_yolo_best_confidence",
         "rule_classification",
@@ -61,21 +63,40 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Merge rule-based active-sonar candidates, Python cache-derived coordinates, and pretrained sonar YOLO classification."
+        description="Merge active-sonar rule candidates, Python-derived coordinates, and optional YOLO experiment results."
     )
     parser.add_argument("--product-dir", type=Path, required=True)
+    parser.add_argument(
+        "--classifier",
+        choices=["rule", "yolo_wal", "uatd_yolo", "yolo"],
+        default="rule",
+        help="rule=do not load model outputs; yolo_wal=use WCI YOLO-WAL outputs; uatd_yolo=use backup UATD YOLO outputs; yolo=uatd_yolo compatibility alias",
+    )
     parser.add_argument("--model-conf", type=float, default=0.25)
     parser.add_argument("--fish-conf", type=float, default=None)
     args = parser.parse_args()
+    classifier = "uatd_yolo" if args.classifier == "yolo" else args.classifier
     model_conf = args.model_conf if args.fish_conf is None else args.fish_conf
 
     product_dir = args.product_dir.resolve()
     regions_payload = load_json(product_dir / "candidate_regions.json")
     positions_payload = load_json(product_dir / "candidate_positions.json")
     crop_payload = load_json(product_dir / "candidate_crop_manifest.json")
+    yolo_wal_path = product_dir / "yolo_wal_detections.json"
     sonar_yolo_path = product_dir / "sonar_yolo_detections.json"
     fish_yolo_path = product_dir / "fish_yolo_detections.json"
-    yolo_payload = load_json(sonar_yolo_path if sonar_yolo_path.exists() else fish_yolo_path)
+    yolo_payload: dict[str, Any] = {"region_results": []}
+    if classifier in {"yolo_wal", "uatd_yolo"}:
+        if classifier == "yolo_wal":
+            yolo_input_path = yolo_wal_path
+        else:
+            yolo_input_path = sonar_yolo_path if sonar_yolo_path.exists() else fish_yolo_path
+        if not yolo_input_path.exists():
+            raise FileNotFoundError(
+                f"Missing YOLO output under {product_dir}. "
+                "Run the matching YOLO inference script first or use --classifier rule."
+            )
+        yolo_payload = load_json(yolo_input_path)
 
     regions = regions_payload.get("regions", [])
     positions = positions_payload.get("positions", [])
@@ -94,7 +115,16 @@ def main() -> int:
         }
 
         yolo_best = float(yolo.get("best_confidence", 0.0) or 0.0)
-        yolo_positive = str(yolo.get("status", "")).endswith("_positive") and yolo_best >= model_conf
+        yolo_positive = (
+            classifier in {"yolo_wal", "uatd_yolo"}
+            and str(yolo.get("status", "")) in {
+                "yolo_wal_fluid_positive",
+                "yolo_wal_false_positive",
+                "yolo_wal_positive",
+                "sonar_yolo_positive",
+            }
+            and yolo_best >= model_conf
+        )
         best_detection = yolo.get("best_detection") or {}
         rule_label = str(region.get("classification", "unknown_target_candidate"))
         if rule_label == "noise_candidate":
@@ -103,14 +133,19 @@ def main() -> int:
 
         if yolo_positive:
             model_class_name = str(best_detection.get("class_name", ""))
-            if model_class_name.lower() == "fish":
+            if classifier == "yolo_wal":
+                final_label = str(best_detection.get("final_label") or "wci_model_candidate")
+                display_label = str(best_detection.get("display_label") or final_label)
+                source = "YOLO_WAL_WCI_fluid_detector"
+            elif model_class_name.lower() == "fish":
                 final_label = "fish_verified_candidate"
                 display_label = "鱼群候选-模型确认"
+                source = "UATD_YOLO_backup" if sonar_yolo_path.exists() else "FishDetectionAI_YOLO_pretrained_on_sonar_fish_images"
             else:
                 final_label = str(best_detection.get("final_label") or "model_target_candidate")
                 display_label = str(best_detection.get("display_label") or final_label)
+                source = "UATD_YOLO_backup" if sonar_yolo_path.exists() else "FishDetectionAI_YOLO_pretrained_on_sonar_fish_images"
             final_conf = yolo_best
-            source = "Sonar_Threat_Detection_YOLOv8_pretrained_on_UATD" if sonar_yolo_path.exists() else "FishDetectionAI_YOLO_pretrained_on_sonar_fish_images"
         elif rule_label == "fish_school_candidate":
             final_label = "fish_rule_candidate_unverified"
             display_label = "鱼群候选-规则未确认"
@@ -121,6 +156,16 @@ def main() -> int:
             display_label = ""
             final_conf = rule_conf
             source = "rule_based_geometry_intensity_only"
+
+        if classifier == "rule":
+            yolo = {
+                "status": "disabled",
+                "best_confidence": 0.0,
+                "detections": [],
+                "overlay_png": "",
+            }
+            yolo_best = 0.0
+            best_detection = {}
 
         mp = position.get("map_position", {})
         geom = position.get("observation_geometry", {})
@@ -134,11 +179,19 @@ def main() -> int:
                 "final_confidence": final_conf,
                 "classification_source": source,
                 "scope_warning": (
-                    "Final label uses a pretrained UATD sonar target detector when it fires, "
-                    "then falls back to rule-based water-column candidate typing."
+                    "Final label is a rule-based water-column candidate type, not a validated trained WCI classifier."
+                    if classifier == "rule"
+                    else (
+                        "Final label uses YOLO-WAL, a WCI-domain fluid/gas-plume detector, when it fires; it is not a fish/submarine/general artificial-object classifier."
+                        if classifier == "yolo_wal"
+                        else "Final label uses backup UATD forward-looking-sonar detector when it fires, then falls back to rule-based water-column candidate typing."
+                    )
                 ),
                 "model_class_name": best_detection.get("class_name", ""),
                 "model_display_label": best_detection.get("display_label", ""),
+                "yolo_wal_status": yolo.get("status", "not_run") if classifier == "yolo_wal" else "",
+                "yolo_wal_best_confidence": yolo_best if classifier == "yolo_wal" else "",
+                "yolo_wal_detections": yolo.get("detections", []) if classifier == "yolo_wal" else [],
                 "sonar_yolo_status": yolo.get("status", "not_run"),
                 "sonar_yolo_best_confidence": yolo_best,
                 "sonar_yolo_detections": yolo.get("detections", []),
@@ -170,23 +223,56 @@ def main() -> int:
 
     payload = {
         "product_id": regions_payload.get("product_id", ""),
-        "pipeline": "active_sonar_candidate_detection_coordinate_projection_sonar_yolo_classification_v1",
+        "pipeline": (
+            "active_sonar_rule_candidate_detection_coordinate_projection_v1"
+            if classifier == "rule"
+            else (
+                "active_sonar_candidate_detection_coordinate_projection_yolo_wal_wci_classification_v1"
+                if classifier == "yolo_wal"
+                else "active_sonar_candidate_detection_coordinate_projection_uatd_yolo_backup_classification_v1"
+            )
+        ),
         "inputs": {
             "candidate_regions_json": str(product_dir / "candidate_regions.json"),
             "candidate_positions_json": str(product_dir / "candidate_positions.json"),
             "candidate_crop_manifest_json": str(product_dir / "candidate_crop_manifest.json"),
-            "sonar_yolo_detections_json": str(sonar_yolo_path),
+            "yolo_wal_detections_json": str(yolo_wal_path) if classifier == "yolo_wal" else "",
+            "sonar_yolo_detections_json": str(sonar_yolo_path) if classifier == "uatd_yolo" else "",
         },
         "method": {
             "candidate_detection": "Python raw Kongsberg .all/.wcd water-column reader -> adaptive MAD threshold -> connected components",
             "coordinate_projection": "Python WCI beam geometry + navigation -> latitude/longitude/depth",
-            "target_classification": "Pretrained UATD sonar YOLO model on exported candidate crops",
+            "target_classification": (
+                "Rule-based candidate typing from WCI geometry and intensity features; YOLO disabled by default"
+                if classifier == "rule"
+                else (
+                    "YOLO-WAL WCI fluid/gas-plume detector on exported WCI candidate crops; falls back to rule-based typing when no model hit is present"
+                    if classifier == "yolo_wal"
+                    else "Backup pretrained UATD sonar YOLO model on exported candidate crops; experimental only for this WCI domain"
+                )
+            ),
         },
-        "limitations": [
-            "The integrated pretrained model covers UATD classes, not every possible military target.",
-            "If the model does not detect a class, the pipeline falls back to rule-based candidate typing.",
-            "A dedicated submarine classifier still requires a submarine/ship target dataset and training or fine-tuning.",
-        ],
+        "limitations": (
+            [
+                "Current labels are candidate types assigned by WCI rules, not validated trained-model classes.",
+                "Formal accuracy requires manually labelled WCI ground truth.",
+                "A dedicated WCI classifier requires Zenodo/Echoview-style feature reproduction or WCI-labelled training data.",
+            ]
+            if classifier == "rule"
+            else (
+                [
+                    "YOLO-WAL covers WCI fluid/gas-plume and FP classes only.",
+                    "It does not classify fish, submarine, ROV, mine, or general artificial objects.",
+                    "Formal project-specific accuracy still requires labelled WCI validation data.",
+                ]
+                if classifier == "yolo_wal"
+                else [
+                "The integrated pretrained model covers UATD forward-looking-sonar classes, not every WCI target.",
+                "If the model does not detect a class, the pipeline falls back to rule-based candidate typing.",
+                "A dedicated submarine classifier still requires a submarine/ship WCI target dataset and training or fine-tuning.",
+                ]
+            )
+        ),
         "targets": final_targets,
     }
     write_json(product_dir / "final_targets.json", payload)

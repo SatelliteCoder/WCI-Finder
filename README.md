@@ -5,17 +5,21 @@
 ```text
 src/
   active_sonar_pipeline.py              原始 .all/.wcd 读取、候选目标检测、坐标定位、渲染数据导出
-  run_sonar_yolo_inference.py           YOLO 主动声呐目标分类
-  merge_target_classification.py        合并候选、定位和模型分类结果
+  run_yolo_wal_inference.py             YOLO-WAL WCI 流体/伪影检测脚本，默认运行
+  run_sonar_yolo_inference.py           UATD YOLO 备用实验脚本，默认不运行
+  merge_target_classification.py        合并模型结果、候选类型和定位结果
 
 models/
   MODEL_REGISTRY.json
+  yolo_wal_wci_fluid_detector/
+    weights/
+      best_combined_gazcogne1.pt
   active_sonar_target_classifier_uatd_yolov8/
     model_config.yaml
     weights/
       active_sonar_target_classifier_best.pt
 
-test.py                                 单文件启动器（候选检测 → YOLO 分类 → 结果合并）
+test.py                                 单文件启动器（候选检测/定位 → YOLO-WAL/规则/UATD → 合并结果）
 
 data/
   20181112_survey/                     随包原始示例数据，仅保留 .all/.wcd
@@ -28,7 +32,7 @@ requirements.txt
 
 当前交付数据只保留原始 `.all/.wcd` 文件，不包含 `Coffee_files`、`.mat`、`.dat` 或 `.evi` 中间文件。
 
-算法包已内置原始示例测线：
+开发目录中可放置原始示例测线：
 
 ```text
 data/20181112_survey/
@@ -41,7 +45,7 @@ data/20190724_survey/
   ...
 ```
 
-如果替换自己的数据，也按以下结构放到算法包内部 `data/` 目录：
+正式交付 zip 默认不打包大体量原始数据。甲方使用时按以下结构把 `.all/.wcd` 数据放到算法包内部 `data/` 目录，或通过 `--data-root` 指向外部数据目录：
 
 ```text
 data/<survey_id>/
@@ -60,11 +64,15 @@ python -m pip install -r requirements.txt
 
 ## 运行
 
+默认运行 YOLO-WAL WCI 模型。该模型是多波束 WCI 领域模型，用于检测 `fluide`（流体/气体羽流候选）和 `FP`（伪影/假阳性候选）。它不是鱼、潜艇、人工物体多类别分类器。
+
+UATD YOLO 仍随包保留，但来自前视声呐数据集，和当前 EM2040CD 多波束水柱 WCI 数据不匹配，只作为备用实验模型。
+
 PowerShell（推荐写成一行，避免续接符问题）：
 
 ```powershell
 cd 主动声呐目标识别模型算法包
-python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all --product-id demo_product --threshold-k-mad 3.8 --bottom-guard-samples 4 --max-regions 80 --model-conf 0.25
+python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all --product-id demo_product --threshold-k-mad 3.8 --bottom-guard-samples 4 --max-regions 80
 ```
 
 也可以直接用默认参数运行（等价于上面这条）：
@@ -81,7 +89,7 @@ python test.py `
   --all-name 0000_20181112_080147_TecnopescaII.all `
   --product-id demo_product `
   --threshold-k-mad 3.8 --bottom-guard-samples 4 `
-  --max-regions 80 --model-conf 0.25
+  --max-regions 80
 ```
 
 上面这条命令使用的是算法包内部相对路径：
@@ -89,10 +97,23 @@ python test.py `
 ```text
 .\data\20181112_survey\
 .\outputs\demo_product\
-.\models\active_sonar_target_classifier_uatd_yolov8\weights\active_sonar_target_classifier_best.pt
 ```
 
 如果总系统已经有自己的原始数据目录，也可以额外传 `--data-root` 指向外部数据目录。
+
+只跑规则候选检测与定位，不运行深度学习模型：
+
+```powershell
+python test.py --product-id demo_rule_only --classifier rule
+```
+
+如果需要复现旧的 UATD YOLO 备用实验，需要显式传入：
+
+```powershell
+python test.py --product-id demo_uatd_yolo_backup --classifier uatd_yolo --model-conf 0.25 --image-size 640
+```
+
+该结果不能作为当前 WCI 数据的正式分类精度依据。
 
 ## 输出
 
@@ -105,11 +126,12 @@ outputs/<ProductId>/
 关键结果：
 
 ```text
-final_targets.json                      最终目标分类与定位结果
+final_targets.json                      候选目标类型与定位结果
 final_targets.csv
+yolo_wal_detections.json                YOLO-WAL WCI 流体/伪影检测结果
+yolo_wal_detections.csv
 echogram_render_data.json               回波图渲染数据
 candidate_overlay.json                  目标检测框数据
 candidate_wci_render_data/<region>.json 每个目标对应的 WCI 扇形图数据
 track_points.csv                        测线轨迹
 ```
-

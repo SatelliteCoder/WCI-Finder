@@ -2,86 +2,70 @@
 
 ## Runtime Entry
 
-Use this command for the full no-MATLAB classification pipeline:
+Use this command for the no-MATLAB WCI candidate pipeline with YOLO-WAL enabled:
 
 ```powershell
-cd E:\Underwater-project\Act_Sonar
-powershell -ExecutionPolicy Bypass -File .\scripts\run_full_classification_pipeline.ps1 `
-  -SurveyId "20190724_survey" `
-  -AllName "0001_20190724_072738_TecnopescaII.all" `
-  -ThresholdKMad 3.8 `
-  -BottomGuardSamples 4 `
-  -MaxRegions 80 `
-  -ModelConf 0.25
+cd 主动声呐目标识别模型算法包
+python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all --product-id demo_product --threshold-k-mad 3.8 --bottom-guard-samples 4 --max-regions 80
 ```
 
 Main stages:
 
 1. `src/active_sonar_pipeline.py`
-   Reads raw Kongsberg `.all/.wcd` water-column data, detects candidates, estimates coordinates, and exports render/model-input data.
-2. `src/run_sonar_yolo_inference.py`
-   Runs the default YOLO sonar target classifier.
+   Reads raw Kongsberg `.all/.wcd` water-column data, detects candidates, estimates coordinates, and exports render/crop data.
+2. `src/run_yolo_wal_inference.py`
+   Runs YOLO-WAL on WCI candidate crops and writes `yolo_wal_detections.json/csv`.
 3. `src/merge_target_classification.py`
-   Merges candidate geometry, positioning, and model classification into `final_targets.json/csv`.
+   Merges YOLO-WAL detections, candidate geometry, positioning, and fallback rule candidate types into `final_targets.json/csv`.
 
-## Model Layout
+## Model Registry
 
-Canonical runtime model directory:
-
-```text
-model/active_sonar_classifiers
-```
-
-Default model:
+Default runtime entry:
 
 ```text
-model/active_sonar_classifiers/uatd_yolov8n/weights/best.pt
+models/MODEL_REGISTRY.json -> yolo_wal_wci_fluid_detector
 ```
 
-Model registry:
+The YOLO-WAL weights are under:
 
 ```text
-model/active_sonar_classifiers/model_registry.json
+models/yolo_wal_wci_fluid_detector/weights/best_combined_gazcogne1.pt
 ```
 
-Third-party source/reference copy:
+This model is a WCI-domain detector for `fluide` and `FP`, not a general fish/submarine/artificial-object classifier.
+
+The UATD YOLO weights remain under:
 
 ```text
-model/Sonar-Threat-Detection-YOLO
+models/active_sonar_target_classifier_uatd_yolov8/weights/
 ```
 
-Legacy fish-only model set, not used by the default full pipeline:
-
-```text
-model/FishDetectionAI
-```
+They are not used by default because that model is trained on forward-looking sonar imagery, not EM2040CD WCI data. It can be run manually with `--classifier uatd_yolo`.
 
 ## Data Requirement
 
-The current Python runtime does not call MATLAB and does not require CoFFee cache files. Put raw Kongsberg data pairs under:
+The Python runtime does not call MATLAB and does not require CoFFee cache files. Put raw Kongsberg data pairs under:
 
 ```text
 data/<survey_id>/<line_name>.all
 data/<survey_id>/<line_name>.wcd
 ```
 
-The package data directory should contain only `.all/.wcd` files. `.mat`, `.dat`, `.evi`, and `Coffee_files` are not required.
+The delivery zip does not include large raw data by default. Use `--data-root` if the host system keeps data outside the package.
 
-## Equivalence To Previous MATLAB Pipeline
+## Product Contract
 
-The Python version is functionally equivalent at the product-contract level:
+The current package provides:
 
-- same high-level pipeline: raw WCI parsing -> echogram candidate detection -> coordinate projection -> WCI crops -> YOLO classification -> final target JSON/CSV
-- same output contract for the YuanTing UI
-- same default YOLO classification model
+- raw `.all/.wcd` parsing
+- echogram generation
+- anomalous WCI candidate detection
+- YOLO-WAL WCI fluid/FP detection on candidate crops
+- fallback candidate type assignment by WCI geometry/intensity rules
+- coordinate projection
+- JSON/CSV outputs for UI display
 
-It is not a line-by-line or bit-exact MATLAB clone:
-
-- MATLAB previously used CoFFee helper functions directly.
-- Python now reads Kongsberg `.all/.wcd` directly and reimplements the needed detection/projection/export logic.
-- Candidate ordering/counts can differ because bottom estimation, connected-component processing, and fallback navigation projection are Python implementations.
-
-For delivery, validate representative survey lines before acceptance and keep output comparison records.
+It does not provide a validated trained classifier for fish/submarine/UUV/artificial-object classes. That requires WCI-labelled training data and a model validation set.
 
 ## Key Outputs
 
@@ -101,5 +85,5 @@ Important files:
 - `candidate_regions.json/csv`
 - `candidate_positions.json/csv`
 - `candidate_crop_manifest.json/csv`
-- `sonar_yolo_detections.json/csv`
+- `yolo_wal_detections.json/csv`
 - `final_targets.json/csv`

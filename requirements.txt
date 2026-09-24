@@ -8,3 +8,6 @@ pandas
 matplotlib
 scipy
 pyproj
+seaborn
+gitpython
+setuptools<81
