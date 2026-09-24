@@ -1,0 +1,274 @@
+{
+  "model": {
+    "name": "YOLO-WAL-WCI-fluid-detector",
+    "source": "https://github.com/perrettymea/YOLO-WAL-fluid-detection-WCI-data",
+    "dataset": "YOLO-WAL WCI fluid/gas plume detector",
+    "task": "multibeam WCI fluid/gas-plume detection and FP filtering",
+    "weights": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\models\\yolo_wal_wci_fluid_detector\\weights\\best_combined_gazcogne1.pt",
+    "classes": {
+      "0": "fluide",
+      "1": "FP"
+    },
+    "confidence_threshold": 0.25,
+    "iou_threshold": 0.45,
+    "imgsz": 960
+  },
+  "scope_note": "YOLO-WAL is a WCI-domain model for fluid/gas-plume detection and false-positive filtering. It is not a fish/submarine/general artificial-object classifier.",
+  "source_manifest": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crop_manifest.json",
+  "region_results": [
+    {
+      "region_id": "CAND_ECHO_0001",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0001_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0002",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0002_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0003",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0003_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0004",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0004_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0005",
+      "status": "yolo_wal_fluid_positive",
+      "detection_count": 1,
+      "best_confidence": 0.2809131145477295,
+      "best_detection": {
+        "product_id": "yolo_wal_branch_test",
+        "region_id": "CAND_ECHO_0005",
+        "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0005_wci_crop.png",
+        "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0005_yolo_wal_overlay.png",
+        "class_id": 0,
+        "class_name": "fluide",
+        "normalized_class_name": "fluide",
+        "final_label": "gas_plume_candidate",
+        "display_label": "流体/气体羽流候选",
+        "confidence": 0.2809131145477295,
+        "bbox_xyxy_px": {
+          "x1": 0.0,
+          "y1": 47.0,
+          "x2": 8.0,
+          "y2": 66.0
+        },
+        "bbox_xywhn": {
+          "x_center": 0.02857142857142857,
+          "y_center": 0.7151898734177216,
+          "width": 0.05714285714285714,
+          "height": 0.24050632911392406
+        }
+      },
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0005_yolo_wal_overlay.png",
+      "detections": [
+        {
+          "product_id": "yolo_wal_branch_test",
+          "region_id": "CAND_ECHO_0005",
+          "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0005_wci_crop.png",
+          "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0005_yolo_wal_overlay.png",
+          "class_id": 0,
+          "class_name": "fluide",
+          "normalized_class_name": "fluide",
+          "final_label": "gas_plume_candidate",
+          "display_label": "流体/气体羽流候选",
+          "confidence": 0.2809131145477295,
+          "bbox_xyxy_px": {
+            "x1": 0.0,
+            "y1": 47.0,
+            "x2": 8.0,
+            "y2": 66.0
+          },
+          "bbox_xywhn": {
+            "x_center": 0.02857142857142857,
+            "y_center": 0.7151898734177216,
+            "width": 0.05714285714285714,
+            "height": 0.24050632911392406
+          }
+        }
+      ]
+    },
+    {
+      "region_id": "CAND_ECHO_0006",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0006_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0007",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0007_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0008",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0008_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0009",
+      "status": "yolo_wal_fluid_positive",
+      "detection_count": 1,
+      "best_confidence": 0.41675588488578796,
+      "best_detection": {
+        "product_id": "yolo_wal_branch_test",
+        "region_id": "CAND_ECHO_0009",
+        "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0009_wci_crop.png",
+        "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0009_yolo_wal_overlay.png",
+        "class_id": 0,
+        "class_name": "fluide",
+        "normalized_class_name": "fluide",
+        "final_label": "gas_plume_candidate",
+        "display_label": "流体/气体羽流候选",
+        "confidence": 0.41675588488578796,
+        "bbox_xyxy_px": {
+          "x1": 128.0,
+          "y1": 48.0,
+          "x2": 140.0,
+          "y2": 65.0
+        },
+        "bbox_xywhn": {
+          "x_center": 0.9571428571428572,
+          "y_center": 0.7847222222222222,
+          "width": 0.08571428571428572,
+          "height": 0.2361111111111111
+        }
+      },
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0009_yolo_wal_overlay.png",
+      "detections": [
+        {
+          "product_id": "yolo_wal_branch_test",
+          "region_id": "CAND_ECHO_0009",
+          "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0009_wci_crop.png",
+          "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0009_yolo_wal_overlay.png",
+          "class_id": 0,
+          "class_name": "fluide",
+          "normalized_class_name": "fluide",
+          "final_label": "gas_plume_candidate",
+          "display_label": "流体/气体羽流候选",
+          "confidence": 0.41675588488578796,
+          "bbox_xyxy_px": {
+            "x1": 128.0,
+            "y1": 48.0,
+            "x2": 140.0,
+            "y2": 65.0
+          },
+          "bbox_xywhn": {
+            "x_center": 0.9571428571428572,
+            "y_center": 0.7847222222222222,
+            "width": 0.08571428571428572,
+            "height": 0.2361111111111111
+          }
+        }
+      ]
+    },
+    {
+      "region_id": "CAND_ECHO_0010",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0010_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0011",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0011_yolo_wal_overlay.png",
+      "detections": []
+    },
+    {
+      "region_id": "CAND_ECHO_0012",
+      "status": "yolo_wal_negative",
+      "detection_count": 0,
+      "best_confidence": 0.0,
+      "best_detection": null,
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0012_yolo_wal_overlay.png",
+      "detections": []
+    }
+  ],
+  "detections": [
+    {
+      "product_id": "yolo_wal_branch_test",
+      "region_id": "CAND_ECHO_0005",
+      "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0005_wci_crop.png",
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0005_yolo_wal_overlay.png",
+      "class_id": 0,
+      "class_name": "fluide",
+      "normalized_class_name": "fluide",
+      "final_label": "gas_plume_candidate",
+      "display_label": "流体/气体羽流候选",
+      "confidence": 0.2809131145477295,
+      "bbox_xyxy_px": {
+        "x1": 0.0,
+        "y1": 47.0,
+        "x2": 8.0,
+        "y2": 66.0
+      },
+      "bbox_xywhn": {
+        "x_center": 0.02857142857142857,
+        "y_center": 0.7151898734177216,
+        "width": 0.05714285714285714,
+        "height": 0.24050632911392406
+      }
+    },
+    {
+      "product_id": "yolo_wal_branch_test",
+      "region_id": "CAND_ECHO_0009",
+      "crop_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\candidate_crops\\CAND_ECHO_0009_wci_crop.png",
+      "overlay_png": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\outputs\\yolo_wal_branch_test\\yolo_wal_overlays\\CAND_ECHO_0009_yolo_wal_overlay.png",
+      "class_id": 0,
+      "class_name": "fluide",
+      "normalized_class_name": "fluide",
+      "final_label": "gas_plume_candidate",
+      "display_label": "流体/气体羽流候选",
+      "confidence": 0.41675588488578796,
+      "bbox_xyxy_px": {
+        "x1": 128.0,
+        "y1": 48.0,
+        "x2": 140.0,
+        "y2": 65.0
+      },
+      "bbox_xywhn": {
+        "x_center": 0.9571428571428572,
+        "y_center": 0.7847222222222222,
+        "width": 0.08571428571428572,
+        "height": 0.2361111111111111
+      }
+    }
+  ]
+}

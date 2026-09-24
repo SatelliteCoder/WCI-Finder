@@ -1,8 +1,16 @@
-# 原始声呐数据（.all/.wcd，体积大，不进仓库）
-data/
+# 原始声呐数据：默认不进仓库，只保留 README 中指定的标准样例数据对
+data/*
+!data/README.md
+!data/20181112_survey/
+data/20181112_survey/*
+!data/20181112_survey/0000_20181112_080147_TecnopescaII.all
+!data/20181112_survey/0000_20181112_080147_TecnopescaII.wcd
 
-# 运行生成的产物
-outputs/
+# 运行生成的产物：默认不进仓库，只保留标准样例输出
+outputs/*
+!outputs/README.md
+!outputs/yolo_wal_branch_test/
+!outputs/yolo_wal_branch_test/**
 
 # Python 字节码缓存
 __pycache__/

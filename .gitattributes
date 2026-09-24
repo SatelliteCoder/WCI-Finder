@@ -1,0 +1,2 @@
+data/**/*.all filter=lfs diff=lfs merge=lfs -text
+data/**/*.wcd filter=lfs diff=lfs merge=lfs -text

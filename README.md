@@ -22,8 +22,8 @@ models/
 test.py                                 单文件启动器（候选检测/定位 → YOLO-WAL/规则/UATD → 合并结果）
 
 data/
-  20181112_survey/                     随包原始示例数据，仅保留 .all/.wcd
-  20190724_survey/                     随包原始示例数据，仅保留 .all/.wcd
+  README.md
+  20181112_survey/                     标准样例输入数据，仅保留 0000 测线 .all/.wcd
 
 requirements.txt
 ```
@@ -45,7 +45,21 @@ data/20190724_survey/
   ...
 ```
 
-正式交付 zip 默认不打包大体量原始数据。甲方使用时按以下结构把 `.all/.wcd` 数据放到算法包内部 `data/` 目录，或通过 `--data-root` 指向外部数据目录：
+仓库内只保留一组可复现实验的标准样例数据：
+
+```text
+data/20181112_survey/
+  0000_20181112_080147_TecnopescaII.all
+  0000_20181112_080147_TecnopescaII.wcd
+```
+
+这组数据用于验证 YOLO-WAL 集成后的完整流程。`.all/.wcd` 通过 Git LFS 管理，clone 后如未自动拉取大文件，请执行：
+
+```bash
+git lfs pull
+```
+
+甲方使用自己的数据时，按以下结构把 `.all/.wcd` 数据放到算法包内部 `data/` 目录，或通过 `--data-root` 指向外部数据目录：
 
 ```text
 data/<survey_id>/
@@ -80,6 +94,20 @@ python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_Tecno
 ```powershell
 python test.py --product-id demo_product
 ```
+
+仓库随附的标准输出位于：
+
+```text
+outputs/yolo_wal_branch_test/
+```
+
+它由以下命令生成：
+
+```powershell
+python test.py --survey-id 20181112_survey --all-name 0000_20181112_080147_TecnopescaII.all --product-id yolo_wal_branch_test --threshold-k-mad 3.8 --bottom-guard-samples 4 --max-regions 80
+```
+
+预期高层结果：12 个候选区域，YOLO-WAL 检出 2 个 `fluide`，最终输出 12 条 `final_targets`。
 
 PowerShell 多行写法（行尾用反引号 `` ` `` 续接，注意反引号后不能有空格）：
 

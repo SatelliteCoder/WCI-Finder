@@ -1,0 +1,35 @@
+{
+  "product_id": "yolo_wal_branch_test",
+  "product_type": "active_multibeam_water_column",
+  "survey_id": "20181112_survey",
+  "platform": "TecnopescaII",
+  "sonar_model": "Kongsberg EM2040CD",
+  "frequency_hz": 300000,
+  "raw_files": {
+    "all": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\data\\20181112_survey\\0000_20181112_080147_TecnopescaII.all",
+    "wcd": "E:\\Underwater-project\\Act_Sonar\\交付文件夹\\最终交付_模型和单HTML\\主动声呐目标识别模型算法包\\data\\20181112_survey\\0000_20181112_080147_TecnopescaII.wcd"
+  },
+  "processing": {
+    "engine": "Python raw Kongsberg .all/.wcd reader",
+    "runtime": "python_no_matlab",
+    "conversion_type": "raw_Kongsberg_ALL_WCD",
+    "tm_projection": "utm33N",
+    "ellipsoid": "wgs84"
+  },
+  "dimensions": {
+    "samples": 426,
+    "beams": 512,
+    "pings": 1337
+  },
+  "track": {
+    "point_count": 1337,
+    "easting_min_m": 445601.3323414417,
+    "easting_max_m": 447123.36536884686,
+    "northing_min_m": 4828370.686290167,
+    "northing_max_m": 4828377.259985567,
+    "latitude_min_deg": 43.60634925501022,
+    "latitude_max_deg": 43.606472419917,
+    "longitude_min_deg": 14.325934400000001,
+    "longitude_max_deg": 14.34479364911841
+  }
+}
